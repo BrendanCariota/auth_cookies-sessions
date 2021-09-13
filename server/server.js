@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import jwt from "jsonwebtoken";
 
 const app = express();
 const saltRounds = 10;
@@ -26,7 +27,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      expires: 60 * 60 * 24,
+      expires: 3600000 * 24,
     },
   })
 );
@@ -62,6 +63,28 @@ app.post("/register", (req, res) => {
   });
 });
 
+// AUTH MIDDLEWARE
+const verifyJWT = (req, res, next) => {
+  const token = req.headers["x-access-token"];
+
+  if (!token) {
+    res.send("No token, please get one");
+  } else {
+    jwt.verify(token, "jwtSecret", (err, decoded) => {
+      if (err) {
+        res.json({ auth: false, message: "Failed to Authenticate" });
+      } else {
+        req.userId = decoded.id;
+        next();
+      }
+    });
+  }
+};
+
+app.get("/isUserAuth", verifyJWT, (req, res) => {
+  res.send("Yo, you are authenticated Congrats!");
+});
+
 app.get("/login", (req, res) => {
   if (req.session.user) {
     res.send({ loggedIn: true, user: req.session.user });
@@ -82,15 +105,22 @@ app.post("/login", (req, res) => {
     if (result.length > 0) {
       bcrypt.compare(password, result[0].password, (error, response) => {
         if (response) {
+          // JWT
+          const id = result[0].id;
+          const token = jwt.sign({ id }, "jwtSecret", {
+            expiresIn: 300,
+          });
+
+          // Session
           req.session.user = result;
-          console.log(req.session.user);
-          res.send(result);
+
+          res.json({ auth: true, token: token, result: result });
         } else {
-          res.send({ message: "Wrong username or password" });
+          res.json({ auth: false, message: "Wrong username or password" });
         }
       });
     } else {
-      res.send({ message: "User doesn't exist!" });
+      res.json({ auth: false, message: "User doesn't exist!" });
     }
   });
 });

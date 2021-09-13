@@ -1,12 +1,31 @@
-import React, { useEffect } from "react";
-import { Container, Nav, Navbar } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Alert, Container, Nav, Navbar, Button } from "react-bootstrap";
 import axios from "axios";
 
 const HomeScreen = () => {
   axios.defaults.withCredentials = true;
 
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  const checkAuth = () => {
+    axios
+      .get("http://localhost:5000/isUserAuth", {
+        headers: {
+          "x-access-token": localStorage.getItem("token"),
+        },
+      })
+      .then((res) => {
+        console.log(res);
+      });
+  };
+
   useEffect(() => {
     axios.get("http://localhost:5000/login").then((res) => {
+      if (res.data.loggedIn === true) {
+        setLoggedIn(true);
+      } else {
+        setLoggedIn(false);
+      }
       console.log(res);
     });
   }, []);
@@ -26,6 +45,12 @@ const HomeScreen = () => {
         </Container>
       </Navbar>
       <h1>Welcome Home!</h1>
+      {loggedIn ? (
+        <Container>
+          <Alert variant="success">You're Logged In</Alert>
+          <Button onClick={checkAuth}>Check Profile</Button>
+        </Container>
+      ) : null}
     </Container>
   );
 };

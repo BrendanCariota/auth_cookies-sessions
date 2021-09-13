@@ -20,10 +20,12 @@ const LoginScreen = ({ history }) => {
         if (res.data.message) {
           setLoginStatus(res.data.message);
           return;
+        } else {
+          localStorage.setItem("token", res.data.token);
+          setUsernameLog("");
+          setPasswordLog("");
+          history.push("/");
         }
-        setUsernameLog("");
-        setPasswordLog("");
-        history.push("/");
       });
   };
 
