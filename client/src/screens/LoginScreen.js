@@ -1,15 +1,33 @@
-import React from "react";
-import { Container, Button, Form } from "react-bootstrap";
+import React, { useState } from "react";
+import { Container, Button, Form, Alert } from "react-bootstrap";
+import axios from "axios";
 
 const LoginScreen = ({ history }) => {
+  const [usernameLog, setUsernameLog] = useState("");
+  const [passwordLog, setPasswordLog] = useState("");
+  const [loginStatus, setLoginStatus] = useState("");
+
+  const login = () => {
+    axios
+      .post("http://localhost:5000/login", {
+        username: usernameLog,
+        password: passwordLog,
+      })
+      .then((res) => {
+        console.log(res.data.message);
+        if (res.data.message) {
+          setLoginStatus(res.data.message);
+          return;
+        }
+        setUsernameLog("");
+        setPasswordLog("");
+        history.push("/");
+      });
+  };
+
   return (
     <Container className="py-5 m-auto">
-      <Button
-        size="sm"
-        className="my-2"
-        variant="secondary"
-        onClick={() => history.push("/")}
-      >
+      <Button size="sm" className="my-2" variant="secondary" onClick={() => history.push("/")}>
         Go Back
       </Button>
       <h1>Login</h1>
@@ -17,17 +35,29 @@ const LoginScreen = ({ history }) => {
       <Form>
         <Form.Group className="mb-3" controlId="formBasicUsername">
           <Form.Label>Username</Form.Label>
-          <Form.Control type="email" placeholder="Enter Username" />
+          <Form.Control
+            type="text"
+            placeholder="Enter Username"
+            value={usernameLog}
+            onChange={(e) => setUsernameLog(e.target.value)}
+          />
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="formBasicPassword">
           <Form.Label>Password</Form.Label>
-          <Form.Control type="password" placeholder="Password" />
+          <Form.Control
+            type="password"
+            placeholder="Password"
+            value={passwordLog}
+            onChange={(e) => setPasswordLog(e.target.value)}
+          />
         </Form.Group>
-        <Button variant="primary" type="submit" className="mb-3">
+        <Button variant="primary" className="mb-3" onClick={login}>
           Login
         </Button>
       </Form>
+      {loginStatus ? <Alert variant="danger">{loginStatus}</Alert> : null}
+
       <a href="/register">Don't have an account? Register</a>
     </Container>
   );
