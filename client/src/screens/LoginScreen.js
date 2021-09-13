@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Button, Form, Alert } from "react-bootstrap";
 import axios from "axios";
 
@@ -6,6 +6,8 @@ const LoginScreen = ({ history }) => {
   const [usernameLog, setUsernameLog] = useState("");
   const [passwordLog, setPasswordLog] = useState("");
   const [loginStatus, setLoginStatus] = useState("");
+
+  axios.defaults.withCredentials = true;
 
   const login = () => {
     axios
@@ -24,6 +26,12 @@ const LoginScreen = ({ history }) => {
         history.push("/");
       });
   };
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/login").then((res) => {
+      console.log(res);
+    });
+  }, []);
 
   return (
     <Container className="py-5 m-auto">

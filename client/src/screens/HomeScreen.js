@@ -1,7 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
+import axios from "axios";
 
 const HomeScreen = () => {
+  axios.defaults.withCredentials = true;
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/login").then((res) => {
+      console.log(res);
+    });
+  }, []);
+
   return (
     <Container>
       <Navbar bg="light" expand="lg">
